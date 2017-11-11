@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include <assert.h>
 
 typedef struct node nodeStruct;
 
@@ -11,54 +12,63 @@ struct node
 
 int sizeOfNodes = 0; //we need to initialize the counter
 
-
+#define OK           0
+#define ALLOC_ERROR  1
 /**
  * adds the data in the last place of the list
  * @param dataToAdd the data to add
  */
-void addToEnd(int dataToAdd)
+int addToEnd(int dataToAdd)
 {
-	nodeStruct *temp, *right;
+	// Should never occur, but should be checked.
+	assert(head != 0);
+
+	nodeStruct *temp = 0, *right = 0; // better to initialize immediately
 	temp = (struct node *) malloc(sizeof(struct node));
 
+	// check if allocation succeeded
+	if (temp == NULL){
+		return ALLOC_ERROR;
+	}
+
+	// this line did not compile and was also not correct
 	//temp->data = (int) malloc(sizeof(int));
 
 	temp->data = dataToAdd;
-	right = (struct node *) head;
+	right = head; // no need for cast
 
-	while (right->next != NULL)
+	while (right->next != NULL) { // should use brackets even for one statement
 		right = right->next;
+	}
 
 	right->next = temp;
 	right = temp;
 	right->next = NULL;
+
+	return OK;
 }
 
 /**
  * adds the data in the first place of the list
  * @param dataToAdd the data to add
  */
-void addFirst(int dataToAdd)
+int addFirst(int dataToAdd)
 {
 	nodeStruct *tempNode;
 	tempNode = (struct node *) malloc(sizeof(struct node));
 
+	// check that allocation succeeded
+	if (tempNode == NULL){
+		return ALLOC_ERROR;
+	}
 	/* danielle - incorrect and not used*/
 	//tempNode->data = (int) malloc(sizeof(int));
 
 	tempNode->data = dataToAdd;
-	if (head == NULL)
-	{
-		head = tempNode;
-		head->next = NULL;
-	}
-	else
-	{
-		/*danielle - I swoped the lines in order to connect tempNode to head*/
-		tempNode->next = head;
+	tempNode->next = head;
+	head = tempNode;
 
-		head = tempNode;
-	}
+	return OK;
 }
 
 /**
