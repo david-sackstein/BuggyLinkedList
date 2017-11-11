@@ -5,11 +5,11 @@ typedef struct node nodeStruct;
 
 struct node
 {
-    int data;
-    nodeStruct *next;
-}*head;
+	int data;
+	nodeStruct *next;
+} *head = 0; //we must initialize the pointer
 
-int sizeOfNodes;
+int sizeOfNodes = 0; //we need to initialize the counter
 
 
 /**
@@ -18,18 +18,20 @@ int sizeOfNodes;
  */
 void addToEnd(int dataToAdd)
 {
-    nodeStruct *temp,*right;
-    temp= (struct node *)malloc(sizeof(struct node));
-    //temp->data = (int) malloc(sizeof(int));
-    temp->data=dataToAdd;
-    right=(struct node *)head;
+	nodeStruct *temp, *right;
+	temp = (struct node *) malloc(sizeof(struct node));
 
-    while(right->next != NULL)
-        right=right->next;
+	//temp->data = (int) malloc(sizeof(int));
 
-    right->next =temp;
-    right=temp;
-    right->next=NULL;
+	temp->data = dataToAdd;
+	right = (struct node *) head;
+
+	while (right->next != NULL)
+		right = right->next;
+
+	right->next = temp;
+	right = temp;
+	right->next = NULL;
 }
 
 /**
@@ -38,19 +40,25 @@ void addToEnd(int dataToAdd)
  */
 void addFirst(int dataToAdd)
 {
-    nodeStruct *tempNode;
-    tempNode=(struct node *)malloc(sizeof(struct node));
-    //tempNode->data = (int) malloc(sizeof(int));
-    tempNode->data = dataToAdd;
-    if (head== NULL) {
-        head = tempNode;
-        head->next = NULL;
-    }
-    else {
-        head = tempNode;
-        tempNode->next = head;
-    }
+	nodeStruct *tempNode;
+	tempNode = (struct node *) malloc(sizeof(struct node));
 
+	/* danielle - incorrect and not used*/
+	//tempNode->data = (int) malloc(sizeof(int));
+
+	tempNode->data = dataToAdd;
+	if (head == NULL)
+	{
+		head = tempNode;
+		head->next = NULL;
+	}
+	else
+	{
+		/*danielle - I swoped the lines in order to connect tempNode to head*/
+		tempNode->next = head;
+
+		head = tempNode;
+	}
 }
 
 /**
@@ -60,20 +68,34 @@ void addFirst(int dataToAdd)
  */
 void addInPlace(int dataToAdd, int placeToAdd)
 {
-    int i;
-    nodeStruct *temp,*left,*right;
-    right=head;
-    for(i=0;i<placeToAdd+1;i++)
-        left = right;
-        right = right->next;
+	int i = 0; //danielle - we must initialize
+	nodeStruct *temp, *left, *right;
+	right = head;
 
-    temp=(struct node *)malloc(sizeof(struct node));
-    //temp->data = (int) malloc(sizeof(int));
-    temp->data=dataToAdd;
-    left->next=temp;
-    left=temp;
-    left->next=right;
-    return;
+	/*danielle - we need to initialize left*/
+	left = 0;
+
+	for (i = 1; i < placeToAdd; i++)
+	{
+		left = right;
+		/* danielle - this should be in the loop in order to advance left and right*/
+		right = right->next;
+	}
+
+	temp = (struct node *) malloc(sizeof(struct node));
+
+	/* danielle - incorrect and not used*/
+	//temp->data = (int) malloc(sizeof(int));
+
+	temp->data = dataToAdd;
+
+	if (left != 0)
+	{
+		left->next = temp;
+	}
+	left = temp;
+	left->next = right;
+	return;
 }
 
 
@@ -83,37 +105,41 @@ void addInPlace(int dataToAdd, int placeToAdd)
  * @param dataToAdd the data to insert
  * @param numberOfNodes the current number of nodes
  */
-void insert(int dataToAdd,int *numberOfNodes)
+void insert(int dataToAdd, int *numberOfNodes)
 {
-    int c=0;
-    nodeStruct *temp;
-    temp=head;
-    if(temp==NULL)
-    {
-        addFirst(dataToAdd);
-    }
-    else
-    {
-        while(temp!=NULL)
-        {
-            if(temp->data<dataToAdd) {
-                c++;
-                temp = temp->next;
-            }
+	int c = 0;
+	nodeStruct *temp;
+	temp = head;
+	if (temp == NULL)
+	{
+		addFirst(dataToAdd);
+	}
+	else
+	{
+		/*danielle - I added the if condition to the while condition, because it didn't handle
+	 	* the case in which we want to add a node with a number that already exists (it
+	 	* caused an endless loop)*/
+		while (temp != NULL && temp->data <= dataToAdd)
+		{
+			c++;
+			temp = temp->next;
+		}
 
-        }
+		if (c == 0)
+		{
+			addFirst(dataToAdd);
+		}
 
-        if(c==0) {
-            addFirst(dataToAdd);
-        }
+		else if (c < *numberOfNodes)
+		{
+			addInPlace(dataToAdd, ++c);
+		}
+		else
+			addToEnd(dataToAdd);
+	}
 
-        else if(c<*numberOfNodes){
-            addInPlace(dataToAdd, ++c);
-        }
-        else
-            addToEnd(dataToAdd);
-    }
-    numberOfNodes++;
+	(*numberOfNodes)++; //danielle - numberOfNodes++ is not good. we have to count (*numberOfNodes),
+	// and not the pointer
 }
 
 
@@ -123,36 +149,39 @@ void insert(int dataToAdd,int *numberOfNodes)
  * @param numberOfNodes the number of nodes
  * @return
  */
-int delete(int dataToDelete,int *numberOfNodes)
+int delete(int dataToDelete, int *numberOfNodes)
 {
-    nodeStruct *temp, *prev;
-    temp=head;
-    while(temp!=NULL)
-    {
-        if(temp->data==dataToDelete)
-        {
-            if(temp==head)
-            {
-                head=temp->next;
-                free(temp);
+	nodeStruct *temp, *prev;
+	temp = head;
+	while (temp != NULL)
+	{
+		if (temp->data == dataToDelete)
+		{
+			if (temp == head)
+			{
+				head = temp->next;
+				free(temp);
 
-            }
-            else {
-                prev->next = temp->next;
-                free(temp);
-            }
-            numberOfNodes--;
-            return 1;
+			}
+			else
+			{
+				prev->next = temp->next;
+				free(temp);
+			}
+			/*danielle - numberOfNodes++ is not good. we have to count (*numberOfNodes),
+			* and not the pointer */
+			(*numberOfNodes)--;
+			return 1;
 
-        }
-        else
-        {
-            prev=temp;
-            temp = temp->next;
-        }
-    }
+		}
+		else
+		{
+			prev = temp;
+			temp = temp->next;
+		}
+	}
 
-    return 0;
+	return 0;
 }
 
 /**
@@ -161,79 +190,84 @@ int delete(int dataToDelete,int *numberOfNodes)
  * <firstNodeData> --> <secondNodeData> --> .... <lastNodeData>\n
  * @param startingNodeToPrint the first node to print
  */
-void  display(nodeStruct *startingNodeToPrint)
+void display(nodeStruct *startingNodeToPrint)
 {
-    printf("number of nodes: %d\n",sizeOfNodes);
-    if(startingNodeToPrint==NULL)
-    {
-        return;
-    }
-    while(startingNodeToPrint!=NULL)
-    {
-        printf("%d --> ",startingNodeToPrint->data);
-        startingNodeToPrint=startingNodeToPrint->next;
-    }
-    printf("NULL\n");
+	printf("number of nodes: %d\n", sizeOfNodes);
+	if (startingNodeToPrint == NULL)
+	{
+		return;
+	}
+	while (startingNodeToPrint != NULL)
+	{
+
+		printf("%d --> ", startingNodeToPrint->data);
+		startingNodeToPrint = startingNodeToPrint->next;
+	}
+	printf("NULL\n");
 }
 
 
-
-
-void basicTest(){
-    int data0 = 0;
-    int data1 = 1;
-    int data2 = 2;
-    int data3 = 3;
-
-    insert(data1,&sizeOfNodes);
-    insert(data2,&sizeOfNodes);
-    insert(data3,&sizeOfNodes);
-    insert(data2,&sizeOfNodes);
-    insert(data1,&sizeOfNodes);
-    insert(data2,&sizeOfNodes);
-    insert(data1,&sizeOfNodes);
-    insert(data0,&sizeOfNodes);
-    display(head);
-
-    delete(data1,&sizeOfNodes);
-    delete(data2,&sizeOfNodes);
-    display(head);
-    delete(data2,&sizeOfNodes);
-    delete(data3,&sizeOfNodes);
-    delete(data2,&sizeOfNodes);
-    display(head);
-    delete(data1,&sizeOfNodes);
-    delete(data1,&sizeOfNodes);
-    delete(data0,&sizeOfNodes);
-    display(head);
-}
-
-void hardTest(){
-    for (int i=0;i<100;i++){
-        insert(i,&sizeOfNodes);
-    }
-    display(head);
-
-    for (int i=0;i<100;i++){
-        insert(i,&sizeOfNodes);
-    }
-
-    display(head);
-    for (int i=0;i<100;i++){
-        delete(i,&sizeOfNodes);
-    }
-    display(head);
-    for (int i=0;i<100;i++){
-        delete(i,&sizeOfNodes);
-    }
-    display(head);
-}
-
-int  main()
+void basicTest()
 {
+	int data0 = 0;
+	int data1 = 1;
+	int data2 = 2;
+	int data3 = 3;
 
-    basicTest();
-    hardTest();
+	insert(data1, &sizeOfNodes);
+	insert(data2, &sizeOfNodes);
+	insert(data3, &sizeOfNodes);
+	insert(data2, &sizeOfNodes);
+	insert(data1, &sizeOfNodes);
+	insert(data2, &sizeOfNodes);
+	insert(data1, &sizeOfNodes);
+	insert(data0, &sizeOfNodes);
 
-    return 0;
+	display(head);
+
+	delete(data1, &sizeOfNodes);
+	delete(data2, &sizeOfNodes);
+	display(head);
+	delete(data2, &sizeOfNodes);
+	delete(data3, &sizeOfNodes);
+	delete(data2, &sizeOfNodes);
+	display(head);
+	delete(data1, &sizeOfNodes);
+	delete(data1, &sizeOfNodes);
+	delete(data0, &sizeOfNodes);
+	display(head);
+}
+
+void hardTest()
+{
+	for (int i = 0; i < 100; i++)
+	{
+		insert(i, &sizeOfNodes);
+	}
+	display(head);
+
+	for (int i = 0; i < 100; i++)
+	{
+		insert(i, &sizeOfNodes);
+	}
+
+	display(head);
+	for (int i = 0; i < 100; i++)
+	{
+		delete(i, &sizeOfNodes);
+	}
+	display(head);
+	for (int i = 0; i < 100; i++)
+	{
+		delete(i, &sizeOfNodes);
+	}
+	display(head);
+}
+
+int main()
+{
+	basicTest();
+	hardTest();
+
+	return 0;
 }
