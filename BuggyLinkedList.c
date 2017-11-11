@@ -64,6 +64,7 @@ int addFirst(int dataToAdd)
 	/* danielle - incorrect and not used*/
 	//tempNode->data = (int) malloc(sizeof(int));
 
+	// no need to differentiated between head is NULL and head is not NULL
 	tempNode->data = dataToAdd;
 	tempNode->next = head;
 	head = tempNode;
@@ -76,36 +77,43 @@ int addFirst(int dataToAdd)
  * @param dataToAdd the data to add
  * @param placeToAdd the place to add
  */
-void addInPlace(int dataToAdd, int placeToAdd)
+int addInPlace(int dataToAdd, int placeToAdd)
 {
 	int i = 0; //danielle - we must initialize
-	nodeStruct *temp, *left, *right;
+	nodeStruct *temp = NULL, *left = NULL, *right = NULL;
 	right = head;
 
-	/*danielle - we need to initialize left*/
+	assert(placeToAdd>1);
+	assert(head != NULL);
+
+	/*danielle - we need to initialize left even though it will always be assigned in the loop*/
 	left = 0;
 
 	for (i = 1; i < placeToAdd; i++)
 	{
 		left = right;
+		assert(right != NULL);
 		/* danielle - this should be in the loop in order to advance left and right*/
 		right = right->next;
+		assert(right != NULL);
 	}
 
 	temp = (struct node *) malloc(sizeof(struct node));
+	if (temp == NULL) {
+		return ALLOC_ERROR;
+	}
 
 	/* danielle - incorrect and not used*/
 	//temp->data = (int) malloc(sizeof(int));
 
 	temp->data = dataToAdd;
 
-	if (left != 0)
-	{
-		left->next = temp;
-	}
+	assert(left != NULL);
+
+	left->next = temp;
 	left = temp;
 	left->next = right;
-	return;
+	return OK;
 }
 
 
@@ -113,7 +121,7 @@ void addInPlace(int dataToAdd, int placeToAdd)
  * inserts a new data number
  * the data is inserted in ascending order, from the lowest to highest
  * @param dataToAdd the data to insert
- * @param numberOfNodes the current number of nodes
+ * @param numberOfNodes pointer to the current number of nodes
  */
 void insert(int dataToAdd, int *numberOfNodes)
 {
@@ -129,7 +137,7 @@ void insert(int dataToAdd, int *numberOfNodes)
 		/*danielle - I added the if condition to the while condition, because it didn't handle
 	 	* the case in which we want to add a node with a number that already exists (it
 	 	* caused an endless loop)*/
-		while (temp != NULL && temp->data <= dataToAdd)
+		while (temp != NULL && (temp->data <= dataToAdd))
 		{
 			c++;
 			temp = temp->next;
@@ -148,7 +156,7 @@ void insert(int dataToAdd, int *numberOfNodes)
 			addToEnd(dataToAdd);
 	}
 
-	(*numberOfNodes)++; //danielle - numberOfNodes++ is not good. we have to count (*numberOfNodes),
+	(*numberOfNodes)++; //danielle - numberOfNodes++ is not good. we have to increment (*numberOfNodes),
 	// and not the pointer
 }
 
@@ -157,11 +165,11 @@ void insert(int dataToAdd, int *numberOfNodes)
  * deletes the first node with the number num
  * @param dataToDelete the data to delete
  * @param numberOfNodes the number of nodes
- * @return
+ * @return 1 if deleted 0 otherwise
  */
 int delete(int dataToDelete, int *numberOfNodes)
 {
-	nodeStruct *temp, *prev;
+	nodeStruct *temp, *prev = NULL;
 	temp = head;
 	while (temp != NULL)
 	{
@@ -171,14 +179,16 @@ int delete(int dataToDelete, int *numberOfNodes)
 			{
 				head = temp->next;
 				free(temp);
-
 			}
 			else
 			{
+				// cannot be NULL because bla bla
+
+				assert (prev != NULL);
 				prev->next = temp->next;
 				free(temp);
 			}
-			/*danielle - numberOfNodes++ is not good. we have to count (*numberOfNodes),
+			/*danielle - numberOfNodes++ is not good. we have to decrement (*numberOfNodes),
 			* and not the pointer */
 			(*numberOfNodes)--;
 			return 1;
